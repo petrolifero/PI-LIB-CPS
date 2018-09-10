@@ -7,58 +7,69 @@
 (struct orS (a b) #:transparent)
 (struct andS (a b) #:transparent)
 
-(define (+& a b sucesso falha )
-    (if (and (number? a) (number? b))
-        (sucesso (+ a b))
-        (falha "deu merda")))
+(struct ge (a b) #:transparent)
+(struct gt (a b) #:transparent)
+(struct lt (a b) #:transparent)
+(struct le (a b) #:transparent)
 
-(define (-& a b sucesso falha )
-    (if (and (number? a) (number? b))
-        (sucesso (- a b))
-        (falha "deu merda")))
+(struct location (a) #:transparent)
+
+
+(define (+& a b sucesso)
+        (sucesso (+ a b)))
+
+(define (-& a b sucesso)
+        (sucesso (- a b)))
         
-(define (*& a b sucesso falha )
-    (if (and (number? a) (number? b))
-        (sucesso (* a b))
-        (falha "deu merda")))
+(define (*& a b sucesso)
+        (sucesso (* a b)))
         
-(define (/& a b sucesso falha )
-    (if (and (number? a) (number? b) (not (equal? b 0)))
-        (sucesso (/ a b))
-        (falha "deu merda")))
+(define (/& a b sucesso)
+        (sucesso (/ a b)))
 
-(define (or& a b sucesso falha )
-    (if (and (boolean? a) (boolean? b))
-        (sucesso (or a b))
-        (falha "deu merda")))
+(define (or& a b sucesso)
+        (sucesso (or a b)))
 
-(define (and& a b sucesso falha )
-    (if (and (boolean? a) (boolean? b))
-        (sucesso (and a b))
-        (falha "deu merda")))
+(define (and& a b sucesso)
+        (sucesso (and a b)))
 
-(define (>=& a b sucesso falha )
-    (if (and (number? a) (number? b))
-        (sucesso (>= a b))
-        (falha "deu merda")))
+(define (>=& a b sucesso)
+        (sucesso (>= a b)))
 
+(define (>& a b sucesso)
+        (sucesso (> a b)))
 
-(struct ambiente (amb mem loca) #:transparent)
+(define (<& a b sucesso)
+        (sucesso (< a b)))
 
-(define (eval-pi-lib exp ambiente sucesso falha)
+(define (<=& a b sucesso)
+        (sucesso (<= a b)))
+
+(define (eval-identifier& str ambiente memoria localização sucesso)
+  (if (hash-has-key? ambiente str)
+      (let ([content (hash-ref ambiente str)])
+        (if (location? content)
+            (sucesso (hash-ref memoria content))
+            (sucesso content)))
+      (raise "uso indevido de variavel não declarada")))
+
+(define (eval-pi-lib exp ambiente memoria localização sucesso)
     (match exp
         [(? boolean? a) (sucesso a)]
         [(? number? a) (sucesso a)]
-        [(add a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (+& v1 v2 sucesso falha)) falha)) falha)]
-        [(sub a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (-& v1 v2 sucesso falha)) falha)) falha)]
-        [(mul a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (*& v1 v2 sucesso falha)) falha)) falha)]
-        [(div a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (/& v1 v2 sucesso falha)) falha)) falha)]
-	[(orS a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (or& v1 v2 sucesso falha)) falha)) falha)]
-	[(andS a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (and& v1 v2 sucesso falha)) falha)) falha)]
-	[(ge a b) (eval-pi-lib a ambiente (lambda (v1) (eval-pi-lib b ambiente (lambda (v2) (>=& v1 v2 sucesso falha)) falha)) falha)]
-	[(gt a b) ()]
-	[(lt a b)]
-	[(neg a)]
-	[(eq a b)]
-	[(le a b)]))
+        [(? string? str) (eval-identifier& str ambiente memoria localização sucesso)]
+        [(add a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (+& v1 v2 sucesso)))))]
+        [(sub a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (-& v1 v2 sucesso)))))]
+        [(mul a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (*& v1 v2 sucesso)))))]
+        [(div a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (/& v1 v2 sucesso)))))]
+	[(orS a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (or& v1 v2 sucesso)))))]
+	[(andS a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (and& v1 v2 sucesso)))))]
+        [(gt a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (>& v1 v2 sucesso)))))]
+	[(ge a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (>=& v1 v2 sucesso)))))]
+        [(lt a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<& v1 v2 sucesso)))))]
+        [(le a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<=& v1 v2 sucesso)))))]))
+
+
+
+
 
