@@ -1,4 +1,5 @@
 #lang racket
+(provide (all-from-out))
 (struct add (a b) #:transparent)
 (struct sub (a b) #:transparent)
 (struct mul (a b) #:transparent)
@@ -6,11 +7,15 @@
 
 (struct orS (a b) #:transparent)
 (struct andS (a b) #:transparent)
+(struct notS (a) #:transparent)
 
 (struct ge (a b) #:transparent)
 (struct gt (a b) #:transparent)
 (struct lt (a b) #:transparent)
 (struct le (a b) #:transparent)
+
+(struct nop () #:transparent)
+
 
 (struct location (a) #:transparent)
 
@@ -67,7 +72,9 @@
         [(gt a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (>& v1 v2 sucesso)))))]
 	[(ge a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (>=& v1 v2 sucesso)))))]
         [(lt a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<& v1 v2 sucesso)))))]
-        [(le a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<=& v1 v2 sucesso)))))]))
+        [(le a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<=& v1 v2 sucesso)))))]
+	[(notS a) (eval-pi-lib a ambiente memoria localização (lambda (v1) (if v1 (sucesso #f) (sucesso #t))))]
+        [(nop) (sucesso `(,ambiente ,memoria ,localização))]))
 
 
 
