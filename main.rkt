@@ -75,7 +75,7 @@
         [(le a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<=& v1 v2 sucesso)))))]
 	[(notS a) (eval-pi-lib a ambiente memoria localização (lambda (v1) (if v1 (sucesso #f) (sucesso #t))))]
         [(nop) (sucesso `(,ambiente ,memoria ,localização))]
-	[(seq a b) (eval-pi-lib a ambiente memoria localização (lambda (l) (car& l (lambda (ambiente') ))))]))
+	[(seq a b) (eval-pi-lib a ambiente memoria localização (lambda (l) (car& l (lambda (ambiente')  ))))]))
 
 
 
