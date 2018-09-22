@@ -58,23 +58,54 @@
             (sucesso content)))
       (raise "uso indevido de variavel não declarada")))
 
-(define (eval-pi-lib exp ambiente memoria localização sucesso)
+(define (eval-pi-lib exp ambiente memoria sucesso)
     (match exp
         [(? boolean? a) (sucesso a)]
         [(? number? a) (sucesso a)]
-        [(? string? str) (eval-identifier& str ambiente memoria localização sucesso)]
-        [(add a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (+& v1 v2 sucesso)))))]
-        [(sub a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (-& v1 v2 sucesso)))))]
-        [(mul a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (*& v1 v2 sucesso)))))]
-        [(div a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (/& v1 v2 sucesso)))))]
-	[(orS a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (or& v1 v2 sucesso)))))]
-	[(andS a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (and& v1 v2 sucesso)))))]
-        [(gt a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (>& v1 v2 sucesso)))))]
-	[(ge a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (>=& v1 v2 sucesso)))))]
-        [(lt a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<& v1 v2 sucesso)))))]
-        [(le a b) (eval-pi-lib a ambiente memoria localização (lambda (v1) (eval-pi-lib b ambiente memoria localização (lambda (v2) (<=& v1 v2 sucesso)))))]
-	[(notS a) (eval-pi-lib a ambiente memoria localização (lambda (v1) (if v1 (sucesso #f) (sucesso #t))))]
-	[(seq a b) (eval-pi-lib a ambiente memoria localização (lambda (l) (car& l (lambda (ambiente')  ))))]))
+        [(? string? str) (eval-identifier& str ambiente memoria sucesso)]
+        [(add a b) (eval-pi-lib a ambiente memoria
+                                (lambda (v1)
+                                  (eval-pi-lib b ambiente memoria
+                                               (lambda (v2) (+& v1 v2 sucesso)))))]
+        [(sub a b) (eval-pi-lib a ambiente memoria
+                                (lambda (v1)
+                                  (eval-pi-lib b ambiente memoria
+                                               (lambda (v2) (-& v1 v2 sucesso)))))]
+        [(mul a b) (eval-pi-lib a ambiente memoria
+                                (lambda (v1)
+                                  (eval-pi-lib b ambiente memoria
+                                               (lambda (v2) (*& v1 v2 sucesso)))))]
+        [(div a b) (eval-pi-lib a ambiente memoria
+                                (lambda (v1)
+                                  (eval-pi-lib b ambiente memoria
+                                               (lambda (v2) (/& v1 v2 sucesso)))))]
+	[(orS a b) (eval-pi-lib a ambiente memoria
+                                (lambda (v1)
+                                  (eval-pi-lib b ambiente memoria
+                                               (lambda (v2) (or& v1 v2 sucesso)))))]
+	[(andS a b) (eval-pi-lib a ambiente memoria
+                                 (lambda (v1)
+                                   (eval-pi-lib b ambiente memoria
+                                                (lambda (v2) (and& v1 v2 sucesso)))))]
+        [(gt a b) (eval-pi-lib a ambiente memoria
+                               (lambda (v1)
+                                 (eval-pi-lib b ambiente memoria
+                                              (lambda (v2) (>& v1 v2 sucesso)))))]
+	[(ge a b) (eval-pi-lib a ambiente memoria
+                               (lambda (v1)
+                                 (eval-pi-lib b ambiente memoria
+                                              (lambda (v2) (>=& v1 v2 sucesso)))))]
+        [(lt a b) (eval-pi-lib a ambiente memoria
+                               (lambda (v1)
+                                 (eval-pi-lib b ambiente memoria
+                                              (lambda (v2) (<& v1 v2 sucesso)))))]
+        [(le a b) (eval-pi-lib a ambiente memoria
+                               (lambda (v1)
+                                 (eval-pi-lib b ambiente memoria
+                                              (lambda (v2) (<=& v1 v2 sucesso)))))]
+	[(notS a) (eval-pi-lib a ambiente memoria
+                               (lambda (v1)
+                                 (if v1 (sucesso #f) (sucesso #t))))]))
 
 
 
